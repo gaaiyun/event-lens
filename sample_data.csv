@@ -1,0 +1,21 @@
+date,user_id,session_id,page,source,device,country,duration,timestamp
+2025-01-01,1,sess_1,home,google,desktop,China,120.5,2025-01-01 00:00:00
+2025-01-01,2,sess_2,product,facebook,mobile,USA,85.3,2025-01-01 00:05:00
+2025-01-01,1,sess_1,product,google,desktop,China,95.2,2025-01-01 00:10:00
+2025-01-01,3,sess_3,home,direct,desktop,UK,200.1,2025-01-01 00:15:00
+2025-01-01,4,sess_4,cart,email,tablet,Japan,150.7,2025-01-01 00:20:00
+2025-01-01,2,sess_2,cart,facebook,mobile,USA,110.4,2025-01-01 00:25:00
+2025-01-01,5,sess_5,checkout,twitter,desktop,Germany,180.9,2025-01-01 00:30:00
+2025-01-01,3,sess_3,about,direct,desktop,UK,75.6,2025-01-01 00:35:00
+2025-01-01,6,sess_6,home,linkedin,mobile,France,90.2,2025-01-01 00:40:00
+2025-01-01,4,sess_4,checkout,email,tablet,Japan,220.3,2025-01-01 00:45:00
+2025-01-01,7,sess_7,blog,google,desktop,China,130.8,2025-01-01 00:50:00
+2025-01-01,5,sess_5,contact,twitter,desktop,Germany,65.4,2025-01-01 00:55:00
+2025-01-01,8,sess_8,home,facebook,mobile,USA,145.2,2025-01-01 01:00:00
+2025-01-01,6,sess_6,product,linkedin,mobile,France,95.7,2025-01-01 01:05:00
+2025-01-01,9,sess_9,cart,direct,desktop,Other,175.3,2025-01-01 01:10:00
+2025-01-01,7,sess_7,home,google,desktop,China,88.9,2025-01-01 01:15:00
+2025-01-01,10,sess_10,about,email,tablet,Japan,110.6,2025-01-01 01:20:00
+2025-01-01,8,sess_8,product,facebook,mobile,USA,135.4,2025-01-01 01:25:00
+2025-01-01,11,sess_11,checkout,google,desktop,China,195.8,2025-01-01 01:30:00
+2025-01-01,9,sess_9,home,direct,desktop,Other,80.2,2025-01-01 01:35:00
