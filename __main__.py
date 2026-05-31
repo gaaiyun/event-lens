@@ -149,11 +149,27 @@ def cmd_behavior(args) -> int:
 def cmd_retention(args) -> int:
     from retention_analyzer import RetentionAnalyzer
     df = _load_csv(args.csv)
+
+    # 自动挑时间列 / 用户列：事件流用 timestamp、流量数据用 date，两种 schema 都吃
+    date_col = next((c for c in ("timestamp", "date", "event_time", "datetime")
+                     if c in df.columns), None)
+    if date_col is None:
+        sys.stderr.write(
+            "[error] 找不到时间列（需要 timestamp / date / event_time / datetime 之一）\n")
+        return 1
+    user_col = next((c for c in ("user_id", "user", "uid")
+                     if c in df.columns), None)
+    if user_col is None:
+        sys.stderr.write("[error] 找不到用户列（需要 user_id / user / uid 之一）\n")
+        return 1
+
     analyzer = RetentionAnalyzer(df)
-    analyzer.create_cohorts("date", "user_id", args.granularity)
-    matrix = analyzer.calculate_retention_matrix()
+    analyzer.create_cohorts(date_col, user_col, args.granularity)
+    matrix = analyzer.calculate_retention_matrix(user_column=user_col)
     payload = {
         "cohort_granularity": args.granularity,
+        "date_column": date_col,
+        "user_column": user_col,
         "retention_matrix": matrix.to_dict() if hasattr(matrix, "to_dict") else matrix,
     }
     return _emit(payload, args.output)
