@@ -216,6 +216,34 @@ def test_cli_retention_serializes_timestamp_keys(sample_csv_path):
         assert rate == 100.0
 
 
+def test_cli_retention_on_event_csv_timestamp_column(sample_event_csv_path):
+    """回归：事件流 CSV 只有 timestamp（无 date 列）时，retention 不再抛
+    KeyError，而是自动挑 timestamp 当时间列并产出合法留存矩阵。"""
+    code, payload = _run_cli(["retention", sample_event_csv_path,
+                              "--granularity", "week"])
+    assert code == 0
+    assert "retention_matrix" in payload
+    matrix = payload["retention_matrix"]
+    # 首期（period 0）每个 cohort 都应 100% 留存
+    assert "0" in matrix
+    assert len(matrix["0"]) > 0
+    for cohort_key, rate in matrix["0"].items():
+        assert isinstance(cohort_key, str)
+        assert rate == 100.0
+
+
+def test_cli_retention_no_time_column_friendly_error(tmp_path):
+    """回归：既无 date 也无 timestamp 等时间列时，friendly 报错退 1，
+    不再吐 KeyError traceback。"""
+    p = tmp_path / "no_time.csv"
+    pd.DataFrame({
+        "user_id": [1, 2, 3],
+        "event": ["a", "b", "c"],
+    }).to_csv(p, index=False)
+    code, _ = _run_cli(["retention", str(p), "--granularity", "week"])
+    assert code == 1
+
+
 def test_cli_forecast_runs_without_freq_kwarg(sample_csv_path):
     """bug2 回归：forecast 不再向 prepare_time_series 传 freq=，能跑通。"""
     code, payload = _run_cli(["forecast", sample_csv_path,
