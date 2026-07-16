@@ -15,6 +15,7 @@ class RetentionAnalyzer:
     def __init__(self, data: Optional[pd.DataFrame] = None):
         self.data = data
         self.cohort_data = None
+        self.cohort_period = None
     
     def load_data(self, data: pd.DataFrame) -> None:
         """加载数据"""
@@ -26,6 +27,10 @@ class RetentionAnalyzer:
         """创建 Cohort 分组"""
         if self.data is None:
             raise ValueError("未加载数据")
+        if cohort_period not in {'day', 'week', 'month'}:
+            raise ValueError("cohort_period 必须是 day、week 或 month")
+
+        self.cohort_period = cohort_period
         
         data = self.data.copy()
         data[date_column] = pd.to_datetime(data[date_column])
@@ -71,27 +76,24 @@ class RetentionAnalyzer:
         
         return retention_matrix.round(2)
     
-    def calculate_retention_rates(self, retention_matrix: pd.DataFrame) -> Dict[str, float]:
-        """计算关键留存率"""
+    def calculate_retention_rates(self, retention_matrix: pd.DataFrame) -> Dict[str, object]:
+        """按 cohort 粒度和真实 period 标签计算关键留存率。"""
         if retention_matrix is None or retention_matrix.empty:
             return {}
-        
-        # 次日留存 (period 1)
-        day1_retention = retention_matrix.iloc[:, 1].mean() if len(retention_matrix.columns) > 1 else 0
-        
-        # 7 日留存 (period 7 或最接近的)
-        day7_col = min(7, len(retention_matrix.columns) - 1)
-        day7_retention = retention_matrix.iloc[:, day7_col].mean() if len(retention_matrix.columns) > day7_col else 0
-        
-        # 30 日留存
-        day30_col = min(30, len(retention_matrix.columns) - 1)
-        day30_retention = retention_matrix.iloc[:, day30_col].mean() if len(retention_matrix.columns) > day30_col else 0
-        
-        return {
-            'day1_retention': round(day1_retention, 2),
-            'day7_retention': round(day7_retention, 2),
-            'day30_retention': round(day30_retention, 2)
-        }
+
+        granularity = self.cohort_period or 'day'
+        milestones = {
+            'day': (1, 7, 30),
+            'week': (1, 4, 12),
+            'month': (1, 3, 6),
+        }[granularity]
+
+        result: Dict[str, object] = {'granularity': granularity}
+        for period in milestones:
+            series = retention_matrix[period] if period in retention_matrix.columns else None
+            value = float(series.mean()) if series is not None else 0.0
+            result[f'{granularity}{period}_retention'] = round(value, 2)
+        return result
     
     def analyze_retention_drivers(self, feature_columns: List[str],
                                  user_column: str = 'user_id',

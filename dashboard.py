@@ -293,9 +293,9 @@ def main():
         col1, col2, col3 = st.columns(3)
         rates = retention_analyzer.calculate_retention_rates(retention_matrix)
         
-        col1.metric("次日留存", f"{rates.get('day1_retention', 0):.1f}%")
-        col2.metric("7 日留存", f"{rates.get('day7_retention', 0):.1f}%")
-        col3.metric("30 日留存", f"{rates.get('day30_retention', 0):.1f}%")
+        col1.metric("次周留存", f"{rates.get('week1_retention', 0):.1f}%")
+        col2.metric("4 周留存", f"{rates.get('week4_retention', 0):.1f}%")
+        col3.metric("12 周留存", f"{rates.get('week12_retention', 0):.1f}%")
         
         # 留存热力图
         fig_retention = px.imshow(retention_matrix, 
