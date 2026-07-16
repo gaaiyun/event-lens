@@ -86,7 +86,7 @@ python -m event_lens funnel sample_events.csv --steps page_view,purchase -o repo
 | `traffic` | PV/UV、来源质量、设备分布、地理分布 |
 | `behavior` | 页面指标、跳出率、访问深度分布 |
 | `retention` | Cohort 留存矩阵（`--granularity day/week/month`） |
-| `anomalies` | Z-Score 统计异常（`--metric` / `--threshold`，找不到指标列会自动回退到首个数值列） |
+| `anomalies` | 按日聚合后的 Z-Score 统计异常（`--metric` / `--threshold`，无日期列时才退回行级检测） |
 | `forecast` | 时间序列预测（`--metric` / `--steps` / `--confidence`） |
 | `segments` | RFM 用户价值分群（自动从明细派生 recency / frequency / monetary） |
 
@@ -210,7 +210,8 @@ python -m pytest tests/ -q
 - **`funnel` 带时间窗口**：相邻步骤必须在窗口内先后发生才算转化，比单纯"做过某事件"
   更接近真实漏斗。
 - **`anomalies` 自动回退**：传入 CSV 里不存在的指标列时，自动回退到第一个数值列
-  并给出告警，而不是直接报错。
+  并给出告警，而不是直接报错。有 `date` 或 `timestamp` 时先把指标按天求和，输出会
+  披露 `analysis_grain` 与 `rows_analyzed`，避免把明细行异常误写成“某天流量异常”。
 - **`segments` 自动派生 RFM**：明细里没有 recency/frequency/monetary 时，按
   `user_id` 从原始数据现算，让命令在任意事件 / 流量 CSV 上都能跑。Recency
   表示距最近一次活动的天数，数值越小得分越高；frequency 和 monetary 越大得分越高。

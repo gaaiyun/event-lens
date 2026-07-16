@@ -187,8 +187,24 @@ def cmd_anomalies(args) -> int:
         sys.stderr.write(f"[warn] 找不到 {args.metric}，改用 {numeric_cols[0]}\n")
         args.metric = numeric_cols[0]
 
-    detector = AnomalyDetector(df)
-    payload = {}
+    analysis_df = df
+    analysis_grain = "row"
+    date_col = next((c for c in ("date", "timestamp") if c in df.columns), None)
+    if date_col is not None:
+        dated = df[[date_col, args.metric]].copy()
+        dated[date_col] = pd.to_datetime(dated[date_col], errors="coerce").dt.normalize()
+        dated[args.metric] = pd.to_numeric(dated[args.metric], errors="coerce")
+        dated = dated.dropna(subset=[date_col, args.metric])
+        if not dated.empty:
+            analysis_df = dated.groupby(date_col, as_index=False)[args.metric].sum()
+            analysis_grain = "day"
+
+    detector = AnomalyDetector(analysis_df)
+    payload = {
+        "analysis_grain": analysis_grain,
+        "rows_analyzed": int(len(analysis_df)),
+        "metric": args.metric,
+    }
     try:
         payload["statistical"] = detector.detect_statistical_anomalies(
             args.metric, threshold=args.threshold)
