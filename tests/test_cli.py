@@ -136,6 +136,32 @@ def test_cli_anomalies_with_visits(sample_csv_path):
                                "--metric", "visits", "--threshold", "2.0"])
     assert code == 0
     assert "statistical" in payload
+    assert payload["analysis_grain"] == "day"
+    assert payload["rows_analyzed"] == 60
+
+
+def test_cli_anomalies_aggregates_detail_rows_before_detection(tmp_path):
+    df = pd.DataFrame({
+        "date": (["2025-01-01"] * 2 + ["2025-01-02"] * 2
+                 + ["2025-01-03"] * 2 + ["2025-01-04"] * 2),
+        "user_id": range(8),
+        "visits": [5, 5, 5, 5, 5, 5, 50, 50],
+    })
+    path = tmp_path / "daily_anomaly.csv"
+    df.to_csv(path, index=False)
+
+    code, payload = _run_cli([
+        "anomalies", str(path), "--metric", "visits", "--threshold", "1.5"
+    ])
+
+    assert code == 0
+    assert payload["analysis_grain"] == "day"
+    assert payload["rows_analyzed"] == 4
+    assert payload["statistical"]["anomaly_count"] == 1
+    assert payload["alerts"][0]["data"] == {
+        "date": "2025-01-04",
+        "visits": 100,
+    }
 
 
 def test_cli_anomalies_fallback_when_metric_missing(sample_csv_path):
