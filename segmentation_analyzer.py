@@ -102,7 +102,10 @@ class SegmentationAnalyzer:
         data = self.data.copy()
         
         # 分位数分箱
-        data['R_score'] = pd.qcut(data[recency_col], n_bins, labels=False, duplicates='drop')
+        recency_bins = pd.qcut(
+            data[recency_col], n_bins, labels=False, duplicates='drop'
+        )
+        data['R_score'] = recency_bins.max() - recency_bins
         data['F_score'] = pd.qcut(data[frequency_col], n_bins, labels=False, duplicates='drop')
         data['M_score'] = pd.qcut(data[monetary_col], n_bins, labels=False, duplicates='drop')
         

@@ -73,10 +73,29 @@ class TestRetentionAnalyzer:
         retention_matrix = analyzer.calculate_retention_matrix()
         rates = analyzer.calculate_retention_rates(retention_matrix)
         
-        assert 'day1_retention' in rates
-        assert 'day7_retention' in rates
-        assert 'day30_retention' in rates
-        assert all(0 <= v <= 100 for v in rates.values())
+        assert rates['granularity'] == 'week'
+        assert 'week1_retention' in rates
+        assert 'week4_retention' in rates
+        assert 'week12_retention' in rates
+        assert all(
+            0 <= rates[key] <= 100
+            for key in ('week1_retention', 'week4_retention', 'week12_retention')
+        )
+
+    def test_retention_rates_use_exact_period_labels(self):
+        """缺失 day 1 时不能把 day 2 的列位置冒充次日留存。"""
+        analyzer = RetentionAnalyzer()
+        analyzer.cohort_period = 'day'
+        retention_matrix = pd.DataFrame(
+            {0: [100.0, 100.0], 2: [50.0, 25.0], 7: [20.0, 10.0]}
+        )
+
+        rates = analyzer.calculate_retention_rates(retention_matrix)
+
+        assert rates['granularity'] == 'day'
+        assert rates['day1_retention'] == 0.0
+        assert rates['day7_retention'] == 15.0
+        assert rates['day30_retention'] == 0.0
     
     def test_analyze_retention_drivers(self, sample_traffic_data):
         """测试留存驱动因素分析"""

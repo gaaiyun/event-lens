@@ -90,6 +90,10 @@ python -m event_lens funnel sample_events.csv --steps page_view,purchase -o repo
 | `forecast` | 时间序列预测（`--metric` / `--steps` / `--confidence`） |
 | `segments` | RFM 用户价值分群（自动从明细派生 recency / frequency / monetary） |
 
+留存里程碑跟随 cohort 粒度：日粒度查看 Day 1/7/30，周粒度查看 Week 1/4/12，
+月粒度查看 Month 1/3/6。里程碑按真实 period 标签取值；某一期没有观测时返回 0，
+不会拿“下一列”冒充目标周期。
+
 ## 输入数据 schema
 
 事件流命令只认三列，其余列忽略：
@@ -208,7 +212,8 @@ python -m pytest tests/ -q
 - **`anomalies` 自动回退**：传入 CSV 里不存在的指标列时，自动回退到第一个数值列
   并给出告警，而不是直接报错。
 - **`segments` 自动派生 RFM**：明细里没有 recency/frequency/monetary 时，按
-  `user_id` 从原始数据现算，让命令在任意事件 / 流量 CSV 上都能跑。
+  `user_id` 从原始数据现算，让命令在任意事件 / 流量 CSV 上都能跑。Recency
+  表示距最近一次活动的天数，数值越小得分越高；frequency 和 monetary 越大得分越高。
 
 ## 许可
 
